@@ -13,9 +13,6 @@ const auth = (req, res, next) => {
             }
 
             req.user = user
-            console.log("User")
-            console.log(user)
-            console.log("Finish normal auth")
             next()
         })
     } catch (err) {
