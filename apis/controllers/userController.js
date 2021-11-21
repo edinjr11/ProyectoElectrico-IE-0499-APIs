@@ -100,7 +100,7 @@ const userController = {
                     return res.status(400).json({message: 'Login now'})
                 }
 
-                const access_token = createAccessToken({id: user._id, name: user.name, email: user.email, role: user.role})
+                const access_token = createAccessToken({id: user.id, name: user.name, email: user.email, role: user.role})
                 res.json({access_token})
             })
         } catch(err) {
@@ -172,14 +172,14 @@ const createActivationToken = (payload) => {
     return jwt.sign(payload, process.env.ACTIVATION_TOKEN_SECRET, {expiresIn: '10m'})
 }
 
-// access token
-const createAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '7d'})
-}
-
 // refresh token
 const createRefreshToken = (payload) => {
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'})
+}
+
+// access token
+const createAccessToken = (payload) => {
+    return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '7d'})
 }
 
 module.exports = userController
