@@ -13,4 +13,4 @@ const relationUserQuestionnaireSchema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model("relationUsersQuestionnaires", relationUserQuestionnaireSchema)
+module.exports = mongoose.model("RelationUsersQuestionnaires", relationUserQuestionnaireSchema)
