@@ -7,7 +7,6 @@ const answerSchema = new mongoose.Schema({
     },
     optionId: {
         type: String,
-        required: true
     },
     questionnaireId: {
         type: String,
