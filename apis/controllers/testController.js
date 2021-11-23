@@ -1,0 +1,202 @@
+const Questionnaires = require('../models/questionnaireModel')
+const Users = require('../models/userModel')
+const RelationUsersQuestionnaires = require('../models/relationUserQuestionnaireModel')
+const Answers = require('../models/answerModel')
+const Questions = require('../models/questionModel')
+const Options = require('../models/optionModel')
+
+const testController = {
+    addQuestionnaires: async (req, res) => {
+        try {
+            // get variables from body request
+            const {name, totalAmount, showedAmount} = req.body
+            if(!name) {
+                return res.status(400).json({message: 'A questionnaire name must be provided'})
+            }
+
+            // check if questionnaire already exists
+            const checkQuestionnaire = await Questionnaires.findOne({name})
+            if(checkQuestionnaire) {
+                return res.status(400).json({message: 'Questionnaire already exists'})
+            }
+
+            // create a new questionnaire and save it
+            const newQuestionnaire = new Questionnaires({
+                name,
+                totalAmount,
+                showedAmount
+            })
+            await newQuestionnaire.save()
+            res.json({message: 'New questionnaire added'})
+        } catch (err) {
+            return res.status(500).json({message: err.message})
+        }
+    },
+    getQuestionnaires: async (req, res) => {
+        try {
+            // get variables from body request
+            const userId = req.user.id
+
+            // check if user has questionnaries assigned
+            const checkRelationUserQuestionnaire = await RelationUsersQuestionnaires.find({userId})
+            if(checkRelationUserQuestionnaire.length == 0) {
+                res.status(400).json({message: 'User does not have questionnaires assigned'})
+            }
+
+            // adding ids of questionnaires assigned to users to an array 
+            const questionnairesIds = []
+            checkRelationUserQuestionnaire.forEach( (obj) => { 
+                questionnairesIds.push(obj.questionnaireId)  
+            })
+
+            // check questionnaires assigned for user
+            const checkUserQuestionnaires = await Questionnaires.find({ '_id': { $in: questionnairesIds } }).select('_id, name')
+            const questionnairesList = {
+                questionnaires: checkUserQuestionnaires
+            }
+            res.json(questionnairesList)
+        } catch (err) {
+            return res.status(500).json({message: err.message})
+        }
+    },
+    addQuestionnaireToUser: async (req, res) => {
+        try {
+            // get variables from body request
+            const {userId, questionnaireId} = req.body
+
+            // check if user exists
+            const checkUser = await Users.findOne({_id: userId})
+            if(!checkUser) {
+                return res.status(400).json({message: 'User does not exists'})
+            }
+
+            // check if questionnarie exists
+            const checkQuestionnaire = await Questionnaires.findOne({_id: questionnaireId})
+            if(!checkQuestionnaire) {
+                return res.status(400).json({message: 'Questionnaire does not exists'})
+            }
+
+            // check if user already has the questionnaire assigned
+            const checkRelationUserQuestionnaire = await RelationUsersQuestionnaires.find({userId})
+            checkRelationUserQuestionnaire.forEach( (obj) => { 
+                if(obj.questionnaireId == questionnaireId) {
+                    return res.status(400).json({message: 'Questionnaire already assigned to user'})
+                }
+            })
+
+            // create and save new user-questionnaire relation
+            const newRelationUsersQuestionaires = new RelationUsersQuestionnaires({
+                userId,
+                questionnaireId
+            })
+            await newRelationUsersQuestionaires.save()
+            res.json({message: 'Questionnaire added to user'})
+        } catch (err) {
+            return res.status(500).json({message: err.message})
+        }
+    },
+    // FIXME: Create and edit logs by creating a DEBUG env variable to debug every API from console
+    getQuestion: async(req, res) => {
+        try {
+            // check if questionnaire exists
+            const checkQuestionnaire = await Questionnaires.findById(req.body.questionnaireId)
+            if(!checkQuestionnaire) {
+                return res.status(400).json({message: 'Questionnaire does not exists'})
+            }
+
+            // check the questionnaires assigned to user
+            const userId = req.user.id
+            const checkRelationUserQuestionnaire = await RelationUsersQuestionnaires.find({userId})
+            if(checkRelationUserQuestionnaire.length == 0) {
+                res.status(400).json({message: 'User does not have questionnaires assigned'})
+            }
+
+            // adding ids of questionnaires assigned to users to an array 
+            const questionnairesIds = []
+            checkRelationUserQuestionnaire.forEach( (obj) => { 
+                questionnairesIds.push(obj.questionnaireId)
+            })
+
+            // check if the user have access to the requested questionnaire
+            if (!questionnairesIds.includes(req.body.questionnaireId)) {
+                return res.json({message: 'User does not have access to this questionnaire'})
+            }
+
+            // check the answers of user on the requested questionnaire
+            const checkUserQuestionnaireAnswers = await Answers.find({userId: userId, questionnaireId: req.body.questionnaireId})
+            const questionUserIdRelation = []
+
+            // if user has answered at least one question, an array of questions ids is saved
+            if(checkUserQuestionnaireAnswers.length > 0) {
+                checkUserQuestionnaireAnswers.forEach( (obj) => { 
+                    questionUserIdRelation.push(obj.questionId)
+                })
+            }
+            console.log(checkUserQuestionnaireAnswers)
+            console.log(questionUserIdRelation)
+            console.log("-------------------------------------")
+
+            // if number of user answers is less than the showed amount by the questionnaire
+            if (checkUserQuestionnaireAnswers.length < checkQuestionnaire.showedAmount) {
+
+                // check the questions related to the requested questionnaire
+                checkQuestions = await Questions.find({questionnaireId: req.body.questionnaireId}).select('_id questionStatement')
+                if(checkQuestions.length == 0) {
+                    return res.status(400).json({message: 'There are no questions available for this questionnaire'})
+                }
+                console.log(checkQuestions)
+                
+                // check every question available for requested questionnaire
+                checkQuestions.forEach( (obj) => {
+
+                    // if user has not answered to the respective question(taken from array of questions 
+                    // ids and questions available) question and respectives answers will be displayed
+                    questionUserIdRelation.forEach( async (questionId) => {
+                        if (questionId != obj._id) {
+                            console.log("Question new to user")
+                            console.log(obj._id)
+
+                            // check options for given available question
+                            checkOptions = await Options.find({questionId: obj._id}).select('_id, optionStatement')
+                            if(checkOptions.length == 0) {
+                                return res.status(400).json({message: 'There are no options available for this question'})
+                            }
+                            console.log("Question and Check options:")
+                            console.log(obj)
+                            console.log(checkOptions)
+
+                            // save this user-answer relation to answer model with an empty option and postoponed as true
+                            const newAnswer = new Answers({
+                                userId: req.user.id,
+                                optionId: "",
+                                questionnaireId: req.body.questionnaireId,
+                                questionId: obj._id,
+                                isPostponed: false
+                            })
+                            await newAnswer.save()
+                            console.log("New Answer added")
+                            console.log(newAnswer)
+                            console.log("Saving new answer")
+
+                            // create and send an object as response
+                            const questionResponse = {
+                                statement: obj,
+                                options: checkOptions
+                            }
+                            return res.json(questionResponse)
+                        }
+                    })
+                })
+            } else if (checkUserQuestionnaireAnswers.length >= checkQuestionnaire.showedAmount) {
+                // TODO: check for questions with isPostponed set as false and response with it
+                
+                // TODO: check if there is not isPostponed set as false in questions, tell FE that there are no more questions available
+            }
+            console.log("Getting question endpoint hit")
+        } catch (err) {
+            return res.status(500).json({message: err.message})
+        }
+    }
+}
+
+module.exports = testController
