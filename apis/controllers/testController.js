@@ -95,8 +95,8 @@ const testController = {
             return res.status(500).json({message: err.message})
         }
     },
-    // FIXME: Create and edit logs by creating a DEBUG env variable to debug every API from console
     getQuestion: async(req, res) => {
+        // FIXME: Create and edit logs by creating a DEBUG env variable to debug every API from console
         try {
             // check if questionnaire exists
             const checkQuestionnaire = await Questionnaires.findById(req.body.questionnaireId)
@@ -171,7 +171,7 @@ const testController = {
                                 optionId: "",
                                 questionnaireId: req.body.questionnaireId,
                                 questionId: obj._id,
-                                isPostponed: false
+                                isPostponed: true
                             })
                             await newAnswer.save()
                             console.log("New Answer added")
@@ -188,14 +188,52 @@ const testController = {
                     })
                 })
             } else if (checkUserQuestionnaireAnswers.length >= checkQuestionnaire.showedAmount) {
-                // TODO: check for questions with isPostponed set as false and response with it
+
+                // check for user's answers that are postponed
+                const checkUserPostponeAnswers = await Answers.find({userId: userId, questionnaireId: req.body.questionnaireId, isPostponed: true})
                 
-                // TODO: check if there is not isPostponed set as false in questions, tell FE that there are no more questions available
+                // if user has at least one postponed question, an array of questions ids is saved
+                if(checkUserPostponeAnswers.length > 0) {
+                    const questionUserIdPostponedRelation = []
+                    checkUserPostponeAnswers.forEach( (obj) => { 
+                        questionUserIdPostponedRelation.push(obj.questionId)
+                    })
+                    console.log("Postponed answers")
+                    console.log(checkUserPostponeAnswers)
+                    
+                    console.log("Postponed questions ids:")
+                    console.log(questionUserIdPostponedRelation)
+
+                    const checkPostponedQuestions = await Questions.find({_id: {$in: questionUserIdPostponedRelation}})
+                    
+                    checkPostponedQuestions.forEach( async (question) => {
+                        console.log("Postponed questions statement:")
+                        console.log(question.questionStatement)
+
+                        // check options for given available question
+                        checkOptions = await Options.find({questionId: question._id}).select('_id, optionStatement')
+                        console.log("Options statement:")
+                        console.log(checkOptions)
+
+                        // create and send an object as response
+                        const questionResponse = {
+                            statement: question.questionStatement,
+                            options: checkOptions
+                        }
+                        return res.json(questionResponse)
+                    })
+
+                // if there are no postponed questions, response with done message(no more questions available)
+                } else if (checkUserPostponeAnswers.length <= 0) {
+                    return res.json({message: 'There are no questions left to show to this user related to the requested questionnaire'})
+                }
             }
-            console.log("Getting question endpoint hit")
         } catch (err) {
             return res.status(500).json({message: err.message})
         }
+    },
+    updateAnswer: async (req, res) => {
+        
     }
 }
 
