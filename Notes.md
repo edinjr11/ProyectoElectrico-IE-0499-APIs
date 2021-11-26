@@ -1,3 +1,6 @@
+# Revisar
+    ### Estaba incorrecto.
+    const url = `http://localhost:5000/user/activation/${activation_token}` 
 # Electric Project - IE-0499
 ### Refactor this ---
 ## Packages used

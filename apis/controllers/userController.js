@@ -33,7 +33,7 @@ const userController = {
             }
 
             const activation_token = createActivationToken(newUser)
-            const url = `http://localhost:3000/user/activate/${activation_token}`
+            const url = `http://localhost:5000/user/activation/${activation_token}`
             sendMail(email, url, "Verify email address")
 
             res.json({message: "Registration success. Activate your account accessing your email."})
