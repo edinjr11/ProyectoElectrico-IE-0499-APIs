@@ -5,8 +5,6 @@ const RelationProductsStores = require('../models/relationProductStoreModel')
 
 const testController = {
     addStore: async (req, res) => {
-
-        // Missing to add the check featuring for authAdmin
         try {
             // get variables from body request
             const {name} = req.body
@@ -20,7 +18,7 @@ const testController = {
                 return res.status(400).json({message: 'This store already exists on the db'})
             }
 
-            // create a new questionnaire and save it
+            // create a new store and save it
             const newStore = new Stores({
                 name
             })
