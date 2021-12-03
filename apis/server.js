@@ -15,7 +15,7 @@ app.use(fileUpload({
 
 // api routing
 app.use('/user', require('./routes/userRoutes'))
-app.use('/test', require('./routes/testRoutes'))
+app.use('/catalogue', require('./routes/catalogueRoutes'))
 
 // db connection
 const dbURI = process.env.DATABASE
