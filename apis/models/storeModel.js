@@ -2,32 +2,25 @@ const mongoose = require('mongoose')
 
 const storeSchema = new mongoose.Schema({
     category: {
-        type: String,
-        required: true
+        type: String
     },
     name: {
-        type: String,
-        required: true
+        type: String
     },
     location: {
-        type: String,
-        required: true
+        type: String
     },
     phone : {
-        type: String,
-        required: true
+        type: String
     },
     email: {
-        type: String,
-        required: true
+        type: String
     },
     hours: {
-        type: String,
-        required: true
+        type: String
     },
     delivery: {
-        type: Boolean,
-        required: true
+        type: Boolean
     }
 }, {
     timestamps: true
