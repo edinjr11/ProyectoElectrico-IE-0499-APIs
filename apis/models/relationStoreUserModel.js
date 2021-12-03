@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
-const questionSchema = new mongoose.Schema({
-    questionStatement: {
+const relationStoreUserSchema = new mongoose.Schema({
+    storeId: {
         type: String,
         required: true
     },
-    questionnaireId: {
+    userId: {
         type: String,
         required: true
     }
@@ -13,4 +13,4 @@ const questionSchema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model("Questions", questionSchema)
+module.exports = mongoose.model("relationStoreUser", relationStoreUserSchema)
