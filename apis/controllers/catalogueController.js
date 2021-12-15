@@ -180,7 +180,7 @@ const catalogueController = {
         description,
         price,
       });
-      await newStore.save();
+      await newProduct.save();
       res.json({ message: "New product added" });
     } catch (err) {
       return res.status(500).json({ message: err.message });
@@ -225,7 +225,7 @@ const catalogueController = {
         { _id: productId },
         updatedInfo
       );
-      if (!checkStores) {
+      if (!checkProducts) {
         return res.status(400).json({ message: "Product does not exists" });
       }
 

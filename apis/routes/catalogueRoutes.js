@@ -17,7 +17,7 @@ router.post('/update_store_info', auth, catalogueController.updateStoreInfo)
 
 router.post('/add_product', auth, catalogueController.addProduct)
 
-router.get('/get_store_products', auth, catalogueController.getStoreProducts)
+router.post('/get_store_products', auth, catalogueController.getStoreProducts)
 
 router.post('/update_product', auth, catalogueController.updateProduct)
 
