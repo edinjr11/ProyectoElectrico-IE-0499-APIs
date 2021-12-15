@@ -4,7 +4,7 @@
 # Electric Project - IE-0499
 ### Refactor this ---
 ## Packages used
-    - npm i express moongosee dotenv cors cookie-parser bcrypt jsonwebtoken cloudinary express-fileupload googleapis node-fetch nodemailer
+    - npm i express mongoose dotenv cors cookie-parser bcrypt jsonwebtoken cloudinary express-fileupload googleapis node-fetch nodemailer
     - npm i -D nodemon
 ---
 ## Front-End <-> Back-End communication - List of APIs
